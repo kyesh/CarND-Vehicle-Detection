@@ -155,9 +155,17 @@ if trainNew:
 
 
 	# Split up data into randomized training and test sets
-	rand_state = np.random.randint(0, 100)
-	X_train, X_test, y_train, y_test = train_test_split(
-	    scaled_X, y, test_size=0.2, random_state=rand_state)
+
+	#rand_state = np.random.randint(0, 100)
+	#X_train, X_test, y_train, y_test = train_test_split(
+	    #scaled_X, y, test_size=0.2, random_state=rand_state)
+	
+	#Train Off Everything
+	X_train = scaled_X;
+	y_train = y;
+	#yes I know this doesn't provide a valid estimate
+	X_test = scaled_X;
+	y_test = y;
 
 	print('Using:',orient,'orientations',pix_per_cell,
 	    'pixels per cell and', cell_per_block,'cells per block')
@@ -184,8 +192,9 @@ with open('objs.pickle') as f:  # Python 3: open(..., 'rb')
     color_space, orient, pix_per_cell, cell_per_block, hog_channel, spatial_size, hist_bins, spatial_feat, hist_feat, hog_feat, X_scaler = pickle.load(f)
 svc = joblib.load('model.pkl') 
 
-y_start_stop = [None, None] # Min and max in y to search in slide_window()
+
 image = mpimg.imread('test_images/test1.jpg')
+y_start_stop = [400, None] # Min and max in y to search in slide_window()
 draw_image = np.copy(image)
 
 # Uncomment the following line if you extracted training
@@ -193,8 +202,10 @@ draw_image = np.copy(image)
 # image you are searching is a .jpg (scaled 0 to 255)
 #image = image.astype(np.float32)/255
 
-windows = slide_window(image, x_start_stop=[None, None], y_start_stop=y_start_stop, 
+windows = slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
                     xy_window=(96, 96), xy_overlap=(0.5, 0.5))
+windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
+                    xy_window=(128, 128), xy_overlap=(0.5, 0.5))
 
 hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
