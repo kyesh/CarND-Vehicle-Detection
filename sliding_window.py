@@ -65,7 +65,7 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
     # Return the list of windows
     return window_list
 
-windows = slide_window(image, x_start_stop=[None, None], y_start_stop=[None, None], 
+windows = slide_window(image, x_start_stop=[None, None], y_start_stop=[int(image.shape[0]/2), None], 
                     xy_window=(128, 128), xy_overlap=(0.5, 0.5))
                        
 window_img = draw_boxes(image, windows, color=(0, 0, 255), thick=6)                    
