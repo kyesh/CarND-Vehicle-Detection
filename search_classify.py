@@ -18,24 +18,24 @@ from sklearn.cross_validation import train_test_split
 # Define a function to extract features from a single image window
 # This function is very similar to extract_features()
 # just for a single image rather than list of images
-def single_img_features(img, color_space='RGB', spatial_size=(32, 32),
+def single_img_features(img, color_space='BGR', spatial_size=(32, 32),
                         hist_bins=32, orient=9, 
                         pix_per_cell=8, cell_per_block=2, hog_channel=0,
                         spatial_feat=True, hist_feat=True, hog_feat=True):    
     #1) Define an empty list to receive features
     img_features = []
-    #2) Apply color conversion if other than 'RGB'
-    if color_space != 'RGB':
+    #2) Apply color conversion if other than 'BGR'
+    if color_space != 'BGR':
         if color_space == 'HSV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+            feature_image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         elif color_space == 'LUV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
+            feature_image = cv2.cvtColor(img, cv2.COLOR_BGR2LUV)
         elif color_space == 'HLS':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+            feature_image = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         elif color_space == 'YUV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+            feature_image = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
         elif color_space == 'YCrCb':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+            feature_image = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
     else: feature_image = np.copy(img)      
     #3) Compute spatial features if flag is set
     if spatial_feat == True:
@@ -66,7 +66,7 @@ def single_img_features(img, color_space='RGB', spatial_size=(32, 32),
 
 # Define a function you will pass an image 
 # and the list of windows to be searched (output of slide_windows())
-def search_windows(img, windows, clf, scaler, color_space='RGB', 
+def search_windows(img, windows, clf, scaler, color_space='BGR', 
                     spatial_size=(32, 32), hist_bins=32, 
                     hist_range=(0, 256), orient=9, 
                     pix_per_cell=8, cell_per_block=2, 
@@ -119,7 +119,7 @@ if trainNew:
 	cars = glob.glob('training_data/vehicles/*/*/*.png')
 	notcars = glob.glob('training_data/non-vehicles/*/*/*.png')
 	#### TODO: Tweak these parameters and see how the results change.
-	color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+	color_space = 'BGR' # Can be BGR, HSV, LUV, HLS, YUV, YCrCb
 	orient = 8  # HOG orientations
 	pix_per_cell = 8 # HOG pixels per cell
 	cell_per_block = 2 # HOG cells per block
@@ -193,7 +193,7 @@ with open('objs.pickle') as f:  # Python 3: open(..., 'rb')
 svc = joblib.load('model.pkl') 
 
 
-image = mpimg.imread('test_images/test1.jpg')
+image = cv2.imread('test_images/test1.jpg')
 y_start_stop = [400, None] # Min and max in y to search in slide_window()
 draw_image = np.copy(image)
 
@@ -216,7 +216,6 @@ hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_sp
 
 window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
 
-plt.imshow(window_img)
-plt.show()
+cv2.imwrite('output.png',window_img)
 
 
