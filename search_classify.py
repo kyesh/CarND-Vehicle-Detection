@@ -114,7 +114,7 @@ def search_windows(img, windows, clf, scaler, color_space='BGR',
 #cars = cars[0:sample_size]
 #notcars = notcars[0:sample_size]
 #
-trainNew = False
+trainNew = True
 if trainNew:
 	cars = glob.glob('training_data/vehicles/*/*/*.png')
 	notcars = glob.glob('training_data/non-vehicles/*/*/*.png')
@@ -123,7 +123,7 @@ if trainNew:
 	orient = 8  # HOG orientations
 	pix_per_cell = 8 # HOG pixels per cell
 	cell_per_block = 2 # HOG cells per block
-	hog_channel = 1 # Can be 0, 1, 2, or "ALL"
+	hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
 	spatial_size = (16, 16) # Spatial binning dimensions
 	hist_bins = 16    # Number of histogram bins
 	spatial_feat = True # Spatial features on or off

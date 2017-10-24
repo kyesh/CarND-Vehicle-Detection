@@ -115,7 +115,7 @@ i = 0
 while(retval == True):
 
 	#image = cv2.imread('test_images/test1.jpg')
-	y_start_stop = [300, None] # Min and max in y to search in slide_window()
+	y_start_stop = [300, None] # Min and max in y to search in slide_window() 350
 	draw_image = np.copy(image)
 
 	# Uncomment the following line if you extracted training
@@ -127,6 +127,8 @@ while(retval == True):
 		            xy_window=(96, 96), xy_overlap=(0.75, 0.75))
 	windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
 		            xy_window=(128, 128), xy_overlap=(0.75, 0.75))
+	#windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
+	#	            xy_window=(64, 64), xy_overlap=(0.75, 0.75))
 
 	hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
 		                spatial_size=spatial_size, hist_bins=hist_bins, 
