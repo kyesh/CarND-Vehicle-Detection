@@ -132,8 +132,8 @@ while(retval == True):
 		            xy_window=(96, 96), xy_overlap=(0.75, 0.75))
 	windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
 		            xy_window=(128, 128), xy_overlap=(0.75, 0.75))
-	#windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
-	#	            xy_window=(64, 64), xy_overlap=(0.75, 0.75))
+	windows += slide_window(image, x_start_stop=[400, None], y_start_stop=y_start_stop, 
+		            xy_window=(64, 64), xy_overlap=(0.75, 0.75))
 
 	hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
 		                spatial_size=spatial_size, hist_bins=hist_bins,
@@ -143,7 +143,8 @@ while(retval == True):
 		                hist_feat=hist_feat, hog_feat=hog_feat)                       
 	heat = update_heat(heat,hot_windows)
 	heat = apply_threshold(heat,0)
-	heatcheck = apply_threshold(heat,2)
+	heat = apply_saturation(heat,10)
+	heatcheck = apply_threshold(heat,4)
 	
 	labels = label(heatcheck)
 	draw_img = draw_labeled_bboxes(np.copy(image), labels)

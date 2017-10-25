@@ -166,6 +166,12 @@ def apply_threshold(heatmap, threshold):
     # Return thresholded map
     return heatmap
 
+def apply_saturation(heatmap, threshold):
+    # Zero out pixels below the threshold
+    heatmap[heatmap > threshold] = threshold
+    # Return thresholded map
+    return heatmap
+
 def draw_labeled_bboxes(img, labels):
     # Iterate through all detected cars
     for car_number in range(1, labels[1]+1):
