@@ -14,6 +14,7 @@ from lesson_functions import *
 # for scikit-learn >= 0.18 use:
 # from sklearn.model_selection import train_test_split
 from sklearn.cross_validation import train_test_split
+from scipy.ndimage.measurements import label
 
 # Define a function to extract features from a single image window
 # This function is very similar to extract_features()
@@ -107,8 +108,12 @@ retval,image = capture.read()
 print(retval)
 #print(img)
 
+heat = np.zeros_like(image[:,:,0]).astype(np.float)
+
 fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-video_writer = cv2.VideoWriter("output.avi", fourcc, 25, (image.shape[1], image.shape[0]))
+video_writer = cv2.VideoWriter("boxes.avi", fourcc, 25, (image.shape[1], image.shape[0]))
+video_writer2 = cv2.VideoWriter("output.avi", fourcc, 25, (image.shape[1], image.shape[0]))
+#video_writer3 = cv2.VideoWriter("heat.avi", fourcc, 25, (image.shape[1], image.shape[0]))
 
 i = 0
 
@@ -131,15 +136,24 @@ while(retval == True):
 	#	            xy_window=(64, 64), xy_overlap=(0.75, 0.75))
 
 	hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
-		                spatial_size=spatial_size, hist_bins=hist_bins, 
-		                orient=orient, pix_per_cell=pix_per_cell, 
+		                spatial_size=spatial_size, hist_bins=hist_bins,
+		                orient=orient, pix_per_cell=pix_per_cell,
 		                cell_per_block=cell_per_block, 
 		                hog_channel=hog_channel, spatial_feat=spatial_feat, 
 		                hist_feat=hist_feat, hog_feat=hog_feat)                       
-
+	heat = update_heat(heat,hot_windows)
+	heat = apply_threshold(heat,0)
+	heatcheck = apply_threshold(heat,2)
+	
+	labels = label(heatcheck)
+	draw_img = draw_labeled_bboxes(np.copy(image), labels)
+	
 	window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
 
 	video_writer.write(window_img)
+	video_writer2.write(draw_img)
+	#video_writer3.write(heatcheck)
+	
 	i = i + 1
 	print(i)
 	retval,image = capture.read()
