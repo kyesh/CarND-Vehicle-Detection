@@ -155,7 +155,7 @@ def update_heat(heatmap, bbox_list):
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
         heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
-    heatmap[:,:] -= 5
+    heatmap[:,:] -= 2
 
     # Return updated heatmap
     return heatmap
