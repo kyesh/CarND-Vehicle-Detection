@@ -120,7 +120,7 @@ i = 0
 while(retval == True):
 
 	#image = cv2.imread('test_images/test1.jpg')
-	y_start_stop = [300, None] # Min and max in y to search in slide_window() 350
+	y_start_stop = [350, None] # Min and max in y to search in slide_window() 350
 	draw_image = np.copy(image)
 
 	# Uncomment the following line if you extracted training
@@ -142,9 +142,9 @@ while(retval == True):
 		                hog_channel=hog_channel, spatial_feat=spatial_feat, 
 		                hist_feat=hist_feat, hog_feat=hog_feat)                       
 	heat = update_heat(heat,hot_windows)
-	heat = apply_threshold(heat,1)
-	heat = apply_saturation(heat,7)
-	heatcheck = apply_threshold(heat,2)
+	heat = apply_threshold(heat,0)
+	heat = apply_saturation(heat,9)
+	heatcheck = apply_threshold(heat,3)
 	
 	labels = label(heatcheck)
 	draw_img = draw_labeled_bboxes(np.copy(image), labels)
