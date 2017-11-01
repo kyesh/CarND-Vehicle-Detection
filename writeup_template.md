@@ -46,48 +46,88 @@ In search_classify.py I train a linear SVC. I used all the pictures to train it 
 
 ### Sliding Window Search
 
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+#### 1. Sliding Window Implementation
+I used the slide and search windows functions given as examples in the lecture materail. I limited to the range for squares to search to be a little above the horizon and onl the right side of the road. Throug trial and error I determened what sizes and over lapping made sense. I added a smaller square search size to help detect cars when they apear smaller because they are further away. I also added more overlap is it seemed like detections were missed because the window was not lining up well with the vehicles in the screeen.
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+#### 2. Developing Classifier Robustness
+I used all 3 color channels to maximise the accuracy of the classifier. Even so there were still false positive detections. To filter out the false positives I used a rolling heatmap which added 1 for every overlapping detection but subtracted a tuneable value every frame. I thresholded the update every frame to prevent negative values from building up. After test I realized I also needed to put in a satruation step to prevent the heatmap from over building and leaving ghost objects detected on the screen long after they moved one.
 
-![alt text][image3]
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
-
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
-
-![alt text][image4]
----
+I had trouble saving the heatmap to an imager/video but [here](./boxes.avi) is a video fo the raw detections. 
 
 ### Video Implementation
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+#### 1. Final Video Output
+Here's a [link to my video result](./output.avi)
 
 
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+#### 2. False Positive Filter
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+To filter out the false positives I used a rolling heatmap which added 1 for every overlapping detection but subtracted a tuneable value every frame. I thresholded the update every frame to prevent negative values from building up. After test I realized I also needed to put in a satruation step to prevent the heatmap from over building and leaving ghost objects detected on the screen long after they moved one. I used the `scipy.ndimage.measurements.label()` group blobs of detections in the heatmap into bounding boxes to be drawn.
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+lesson_functions.py
+```
+def update_heat(heatmap, bbox_list):
+    # Iterate through list of bboxes
+    for box in bbox_list:
+        # Add += 1 for all pixels inside each bbox
+        # Assuming each "box" takes the form ((x1, y1), (x2, y2))
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
+    heatmap[:,:] -= 2
 
-### Here are six frames and their corresponding heatmaps:
+    # Return updated heatmap
+    return heatmap
 
-![alt text][image5]
+def apply_threshold(heatmap, threshold):
+    # Zero out pixels below the threshold
+    heatmap[heatmap <= threshold] = 0
+    # Return thresholded map
+    return heatmap
 
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
+def apply_saturation(heatmap, threshold):
+    # Zero out pixels below the threshold
+    heatmap[heatmap > threshold] = threshold
+    # Return thresholded map
+    return heatmap
 
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
+def draw_labeled_bboxes(img, labels):
+    # Iterate through all detected cars
+    for car_number in range(1, labels[1]+1):
+        # Find pixels with each car_number label value
+        nonzero = (labels[0] == car_number).nonzero()
+        # Identify x and y values of those pixels
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+        # Define a bounding box based on min/max x and y
+        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
+        # Draw the box on the image
+        cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
+    # Return the image
+    return img
+```
 
+processVideo.py
+```
+hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
+                  spatial_size=spatial_size, hist_bins=hist_bins,
+                  orient=orient, pix_per_cell=pix_per_cell,
+                  cell_per_block=cell_per_block, 
+                  hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                  hist_feat=hist_feat, hog_feat=hog_feat)                       
 
+heat = update_heat(heat,hot_windows)
+heat = apply_threshold(heat,0)
+heat = apply_saturation(heat,9)
+heatcheck = apply_threshold(heat,3)
 
+labels = label(heatcheck)
+
+draw_img = draw_labeled_bboxes(np.copy(image), labels)
+```
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
-
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+Computation time was definitly a big problem running this 50s video took several hours on my laptop. This would be challenging to run realtime on affordable hardware. I think this software is most likely to fail as vehicles get smaller and further away resutling in less total overlapping detections on the vehicle.
 
